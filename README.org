@@ -6,6 +6,7 @@ Consider the raw images from the MNIST dataset as input.
 This is a classification problem with C classes, where C= 10.
 Extract a global dataset of N pairs (at least 10,000).
 Use resilient backpropagation (RProp) as the weight update algorithm, with a neural network having a single layer of internal nodes.
-Select the model hyperparameters, i.e., the RProp parameters (η+ and η-) and the number of internal nodes, based on a k-fold cross-validation approach (e.g., k= 10). Compare the classical “grid” approach with the “random” approach (J. Bergstra, Y. Bengio, Random search for hyper-parameter optimization, 2012) for hyperparameter search.
+Select the model hyperparameters, i.e., the RProp parameters (η+ and η-) and the number of internal nodes, based on a k-fold cross-validation approach (e.g., k= 10).
+Compare the classical “grid” approach with the “random” approach (J. Bergstra, Y. Bengio, Random search for hyper-parameter optimization, 2012) for hyperparameter search.
 Select and keep all other parameters constant, such as activation functions.
 If necessary, due to computational time and memory constraints, you can reduce the dimensions of the raw MNIST dataset images (e.g., using the imresize function in MATLAB).
