@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torchvision
-from torchvision.datasets import VisionDataset
 from torchvision.transforms import Compose, ToTensor, Normalize
 from torch.utils.data import DataLoader, Subset
 
@@ -19,8 +18,8 @@ from datetime import datetime
 OUTPUT = 10
 INPUT = 784
 CPU = torch.device("cpu")
-PATIENCE = 5
-EPOCHS = 50
+PATIENCE = 10
+EPOCHS = 75
 BATCH_SIZE = 128
 MODELS_TO_KEEP = 3
 
@@ -122,7 +121,7 @@ def train_and_validate_with_params(
 
 
 def k_fold_cross_validate(
-    dataset: VisionDataset,
+    dataset,
     k: int,
     parameters_space: Dict[str, List[Union[int, float]]],
     search_kind: ParameterSearchKind,
@@ -236,13 +235,16 @@ def plots_results(result_grid, result_random):
 def main():
     K = 10  # how many folds
     N_ITER = 10  # how many iteration in random search
+    SIZE = 10000
 
-    mnist = torchvision.datasets.MNIST(
+    full_mnist = torchvision.datasets.MNIST(
         root="./data",
         train=True,
         transform=Compose([ToTensor(), Normalize((0.1307,), (0.3081,))]),
         download=True,
     )
+
+    mnist = Subset(full_mnist, range(SIZE))
 
     param_space = {
         "hidden_size": [128, 256, 512, 768, 1024],
