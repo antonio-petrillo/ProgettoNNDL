@@ -10,3 +10,25 @@ Select the model hyperparameters, i.e., the RProp parameters (η+ and η-) and t
 Compare the classical “grid” approach with the “random” approach (J. Bergstra, Y. Bengio, Random search for hyper-parameter optimization, 2012) for hyperparameter search.
 Select and keep all other parameters constant, such as activation functions.
 If necessary, due to computational time and memory constraints, you can reduce the dimensions of the raw MNIST dataset images (e.g., using the imresize function in MATLAB).
+* Project setup
+Di seguito lo script bash per creare il  [[https://docs.python.org/3/library/venv.html][virtual environment]] (venv) per il progetto
+#+begin_src bash :tangle setup.sh
+#!/usr/bin/env python
+python -m venv venv
+
+source ./venv/bin/activate
+
+pip install -r requirements.txt
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+#+end_src
+** Requirements
+Di seguito la lista delle dipendenze per eseguire il progetto:
+#+begin_src txt :tangle requirements.txt
+numpy
+scikit-learn
+matplotlib
+#+end_src
+
+** Note
+Pytorch va installato esternamente da [[https://packaging.python.org/en/latest/tutorials/installing-packages/][pip]].
+Il comando presente nello script è preso direttamente dal sito di [[https://pytorch.org/get-started/locally/][pytorch]].
