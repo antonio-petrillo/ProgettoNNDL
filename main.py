@@ -191,7 +191,7 @@ def k_fold_cross_validate(
     return results[: min(MODELS_TO_KEEP, len(results))]
 
 
-def display_and_save_plots(result_grid, result_random):
+def plots_results(result_grid, result_random):
     results = [
         (result_grid, ParameterSearchKind.GRID),
         (result_random, ParameterSearchKind.RANDOM),
@@ -259,7 +259,7 @@ def main():
         mnist, K, param_space, ParameterSearchKind.RANDOM, N_ITER
     )
 
-    display_and_save_plots(best_grid_results, best_random_results)
+    plots_results(best_grid_results, best_random_results)
 
 
 if __name__ == "__main__":
