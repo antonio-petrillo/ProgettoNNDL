@@ -49,11 +49,11 @@ class Network(nn.Module):
 
 def train_and_validate_with_params(
     model: Network,  # the network model to train
-    train_loader: DataLoader,  # dataset, to split in training and validation
-    validation_loader: DataLoader,  # dataset, to split in training and validation
+    train_loader: DataLoader,  # training dataset
+    validation_loader: DataLoader,  # validation dataset
     etas: Tuple[float, float],  # the (η-,η+) to use in Rprop
     epochs: int = EPOCHS,  # for how many epoch the network should be trained
-    patience: int = PATIENCE,  # how many 'bad epochs' should we see before stoppin?
+    patience: int = PATIENCE,  # how many 'bad epochs' should we see before early stopping
 ):
     # cross entropy since we have a classification problem
     cross_loss = nn.CrossEntropyLoss()
@@ -106,7 +106,7 @@ def train_and_validate_with_params(
         accuracy = metrics.accuracy_score(targets, predictions)
 
         print(
-            f"Epoch:{epoch:2d}/{epochs}: - Loss: {loss:.7f} - Accuracy: {accuracy:.7f}%"
+            f"Epoch:{epoch:3d}/{epochs}: - Loss: {loss:.7f} - Accuracy: {accuracy:.7f}%"
         )
 
         if loss < best_loss:
@@ -196,7 +196,7 @@ def display_and_save_plots(result_grid, result_random):
         (result_grid, ParameterSearchKind.GRID),
         (result_random, ParameterSearchKind.RANDOM),
     ]
-    fig, axes = plt.subplots(2, len(result_grid), figsize=(15, 10))
+    _, axes = plt.subplots(2, len(result_grid), figsize=(15, 10))
 
     for i, (data, kind) in enumerate(results):
         for j, result in enumerate(data):
@@ -224,6 +224,7 @@ def display_and_save_plots(result_grid, result_random):
                 fontsize=9,
             )
 
+    # denote like file name
     timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
     filename = f"plot--{timestamp}"
     plt.tight_layout()
