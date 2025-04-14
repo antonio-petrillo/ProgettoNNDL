@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torchvision
 from torchvision.transforms import Compose, ToTensor, Normalize
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader, Subset, SubsetRandomSampler
 
 from sklearn.model_selection import KFold, ParameterGrid, ParameterSampler
 import sklearn.metrics as metrics
@@ -18,8 +18,8 @@ from datetime import datetime
 OUTPUT = 10
 INPUT = 784
 CPU = torch.device("cpu")
-PATIENCE = 10
-EPOCHS = 75
+PATIENCE = 20
+EPOCHS = 200
 BATCH_SIZE = 128
 MODELS_TO_KEEP = 3
 
@@ -33,12 +33,13 @@ class ParameterSearchKind(Enum):
 
 
 class Network(nn.Module):
-    def __init__(self, hidden: int):
+    def __init__(self, hidden: int, dropout: float = 0.2):
         super().__init__()
         self.model = nn.Sequential(
             nn.Flatten(),
             nn.Linear(INPUT, hidden),
             nn.ReLU(),
+            nn.Dropout(dropout),
             nn.Linear(hidden, OUTPUT),
         )
 
@@ -63,7 +64,7 @@ def train_and_validate_with_params(
         etas=etas,
     )
 
-    best_loss = float("inf")
+    best_accuracy = float("inf")
 
     patience_counter = 0
 
@@ -108,8 +109,8 @@ def train_and_validate_with_params(
             f"Epoch:{epoch:3d}/{epochs}: - Loss: {loss:.7f} - Accuracy: {accuracy:.7f}%"
         )
 
-        if loss < best_loss:
-            best_loss = loss
+        if accuracy < best_accuracy:
+            best_accuracy = accuracy
             patience_counter = 0
         else:
             patience_counter += 1
@@ -141,7 +142,6 @@ def k_fold_cross_validate(
     )
 
     # K-Fold cross validation
-    indices = [i for i in range(len(dataset))]
     k_fold = KFold(n_splits=k, shuffle=True)
 
     results = []
@@ -149,18 +149,24 @@ def k_fold_cross_validate(
     for params in params_list:
         accuracies, losses = [], []
         print("\n------------------ START ---------------------")
-        print(f"Search Type:{search_kind} - Parameters: {params}")
+        print(f"Search Type: {search_kind} - Parameters: {params}")
 
         all_predictions, all_targets = [], []
-        for fold, (train_idx, validate_idx) in enumerate(k_fold.split(indices)):
+        for fold, (train_idx, validate_idx) in enumerate(k_fold.split(dataset)):
             print(f"Current Fold: {fold+1:2d}/{k}")
 
-            train = Subset(dataset, train_idx)
-            validate = Subset(dataset, validate_idx)
+            train_sampler = SubsetRandomSampler(train_idx)
+            validation_sampler = SubsetRandomSampler(validate_idx)
 
-            train_loader = DataLoader(train, batch_size=BATCH_SIZE, shuffle=True)
+            train_loader = DataLoader(
+                dataset,
+                batch_size=BATCH_SIZE,
+                sampler=train_sampler,
+            )
             validation_loader = DataLoader(
-                validate, batch_size=BATCH_SIZE, shuffle=False
+                dataset,
+                batch_size=BATCH_SIZE,
+                sampler=validation_sampler,
             )
 
             model = Network(hidden=params["hidden_size"]).to(CPU)
@@ -202,15 +208,21 @@ def plots_results(result_grid, result_random):
             params, avg_accuracy, avg_loss, predictions, targets = result
             confusion_matrix = metrics.confusion_matrix(targets, predictions)
             precision = metrics.precision_score(
-                targets, predictions, average="macro", zero_division=0
+                targets,
+                predictions,
+                average="macro",
+                zero_division=0,
             )
             recall = metrics.recall_score(
-                targets, predictions, average="macro", zero_division=0
+                targets,
+                predictions,
+                average="macro",
+                zero_division=0,
             )
 
             disp = metrics.ConfusionMatrixDisplay(confusion_matrix=confusion_matrix)
             disp.plot(ax=axes[i, j], cmap=plt.cm.Oranges)
-            title = f"Search: {kind}\nParams: hidden_size={params['hidden_size']}, eta_minus={params['eta_minus']}, eta_plus={params['eta_plus']}"
+            title = f"Search: {kind} \nParams: hidden_size={params['hidden_size']}, eta_minus={params['eta_minus']}, eta_plus={params['eta_plus']}"
             axes[i, j].set_title(title, fontsize=10)
             score = f" Avg Loss: {avg_loss:4.4f}        Avg Accuracy: {avg_accuracy:4.4f}\nRecall: {recall:4.4f}       Precision: {precision:4.4f}"
             axes[i, j].text(
