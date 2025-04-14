@@ -38,7 +38,7 @@ class Network(nn.Module):
         self.model = nn.Sequential(
             nn.Flatten(),
             nn.Linear(INPUT, hidden),
-            nn.ReLU(),
+            nn.Sigmoid(),
             nn.Dropout(dropout),
             nn.Linear(hidden, OUTPUT),
         )
