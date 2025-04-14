@@ -18,10 +18,9 @@ from datetime import datetime
 OUTPUT = 10
 INPUT = 784
 CPU = torch.device("cpu")
-PATIENCE = 20
-EPOCHS = 200
-BATCH_SIZE = 128
-MODELS_TO_KEEP = 3
+PATIENCE = 8
+EPOCHS = 40
+MODELS_TO_KEEP = 2
 
 
 class ParameterSearchKind(Enum):
@@ -38,7 +37,7 @@ class Network(nn.Module):
         self.model = nn.Sequential(
             nn.Flatten(),
             nn.Linear(INPUT, hidden),
-            nn.Sigmoid(),
+            nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(hidden, OUTPUT),
         )
@@ -64,7 +63,7 @@ def train_and_validate_with_params(
         etas=etas,
     )
 
-    best_accuracy = float("inf")
+    best_loss = float("inf")
 
     patience_counter = 0
 
@@ -109,8 +108,8 @@ def train_and_validate_with_params(
             f"Epoch:{epoch:3d}/{epochs}: - Loss: {loss:.7f} - Accuracy: {accuracy:.7f}%"
         )
 
-        if accuracy < best_accuracy:
-            best_accuracy = accuracy
+        if loss < best_loss:
+            best_loss = loss
             patience_counter = 0
         else:
             patience_counter += 1
@@ -118,7 +117,12 @@ def train_and_validate_with_params(
                 # The 'model' doesn't improve for '$patience' epochs, kill the training to prevent overfitting
                 break
 
-    return float(loss), accuracy, all_predictions, all_targets
+    return (
+        float(loss),
+        accuracy,
+        all_predictions,
+        all_targets,
+    )
 
 
 def k_fold_cross_validate(
@@ -160,12 +164,12 @@ def k_fold_cross_validate(
 
             train_loader = DataLoader(
                 dataset,
-                batch_size=BATCH_SIZE,
+                batch_size=len(train_idx),
                 sampler=train_sampler,
             )
             validation_loader = DataLoader(
                 dataset,
-                batch_size=BATCH_SIZE,
+                batch_size=len(validate_idx),
                 sampler=validation_sampler,
             )
 

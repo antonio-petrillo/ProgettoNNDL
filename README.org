@@ -3,7 +3,7 @@
 
 * Traccia 7 (Medium difficultry)
 Consider the raw images from the MNIST dataset as input.
-This is a classification problem with C classes, where C= 10.
+This is a classification problem with C classes, where C=10.
 Extract a global dataset of N pairs (at least 10,000).
 Use resilient backpropagation (RProp) as the weight update algorithm, with a neural network having a single layer of internal nodes.
 Select the model hyperparameters, i.e., the RProp parameters (η+ and η-) and the number of internal nodes, based on a k-fold cross-validation approach (e.g., k= 10).
