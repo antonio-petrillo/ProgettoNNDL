@@ -142,7 +142,7 @@ def k_fold_cross_validate(
 
     # K-Fold cross validation
     indices = [i for i in range(len(dataset))]
-    k_fold = KFold(n_splits=k, shuffle=True, random_state=0)
+    k_fold = KFold(n_splits=k, shuffle=True)
 
     results = []
 
